@@ -75,7 +75,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
+    <Compile Include="..\App.cs">
+      <Link>App.cs</Link>
+    </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -106,7 +108,6 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)PhaseSyncAddin.addin" "$(AppData)\Autodesk\REVIT\Addins\2012"
-copy "$(ProjectDir)\bin\debug\PhaseSyncAddin.dll" "$(AppData)\Autodesk\REVIT\Addins\2012"
-copy "$(ProjectDir)PhaseSyncSharedParams.txt" "$(AppData)\Autodesk\REVIT\Addins\2012"</PostBuildEvent>
+copy "C:\Users\tzvi\Documents\PhaseSyncAddin\PhaseSyncAddin\PhaseSyncAddin\bin\debug\PhaseSyncAddin.dll" "$(AppData)\Autodesk\REVIT\Addins\2012"</PostBuildEvent>
   </PropertyGroup>
 </Project>
