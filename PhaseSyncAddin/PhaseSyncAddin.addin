@@ -5,7 +5,7 @@
     <Description>Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters</Description>
     <Assembly>PhaseSyncAddin.dll</Assembly>
     <FullClassName>PhaseSyncAddin.Command</FullClassName>
-    <ClientId>75831bac-9ecb-4e48-9948-0e11fb343bfb</ClientId>
+    <ClientId>E4F819ED-2ED4-4CDC-AA35-26BA1441C1C2</ClientId>
     <VendorId>TDWK</VendorId>
     <VendorDescription>Tadwork</VendorDescription>
   </AddIn>
@@ -13,7 +13,7 @@
     <Name>Application PhaseSyncAddin</Name>
     <Assembly>PhaseSyncAddin.dll</Assembly>
     <FullClassName>PhaseSyncAddin.App</FullClassName>
-    <ClientId>3b27d482-9fde-45aa-abd8-b814d5b005f0</ClientId>
+    <ClientId>4D6E3A89-24CE-4C9C-B527-FA0D696B9EFD</ClientId>
     <VendorId>TDWK</VendorId>
     <VendorDescription>Tadwork</VendorDescription>
   </AddIn>
