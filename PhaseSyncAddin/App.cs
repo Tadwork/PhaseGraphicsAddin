@@ -5,15 +5,23 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit;
 using System.Linq;
+using System.Reflection;
+using System.IO;
+using Autodesk.Revit.DB.Events;
 #endregion
-
+//DESCRIPTION
+//Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters
 namespace PhaseSyncAddin
 {
     class App : IExternalApplication
     {
         public Result OnStartup(UIControlledApplication a)
-        {
+        {//add new parameter to wall when a document opens
+            a.ControlledApplication.DocumentOpened +=new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(ControlledApplication_DocumentOpened);
+                        
+
             // Register wall updater with Revit
             WallUpdater updater = new WallUpdater(a.ActiveAddInId);
             UpdaterRegistry.RegisterUpdater(updater);
@@ -31,41 +39,61 @@ namespace PhaseSyncAddin
             UpdaterRegistry.UnregisterUpdater(updater.GetUpdaterId());
             return Result.Succeeded;
         }
-        #region Shared Parameter
-        public bool SetNewParameterToInsanceWall(UIApplication app, DefinitionFile myDefinitionFile)
+        public void application_DocumentOpened(object sender, DocumentOpenedEventArgs args)
         {
+            //add new parameter to wall when a document opens
+
+                // get document from event args.
+                Document doc = args.Document;
+            
+               SetNewParameterToInstanceWall(doc, AssemblyDirectory + "\\PhaseSyncSharedParams.txt");
+        }
+
+
+        #region Shared Parameter
+        public bool SetNewParameterToInstanceWall(Document doc, string sharedParameterFile)
+        {
+            Application app = doc.Application;
+            DefinitionFile myDefinitionFile;
+            // set the path of shared parameter file to current Revit
+            app.SharedParametersFilename = sharedParameterFile;
+            // open the file
+            myDefinitionFile =  app.OpenSharedParameterFile();
             // create a new group in the shared parameters file
             DefinitionGroups myGroups = myDefinitionFile.Groups;
-            DefinitionGroup myGroup = myGroups.Create("MyParameters1");
+            DefinitionGroup myGroup = myGroups.Create("Phases");
             // create an instance definition in definition group MyParameters
-            Definition myDefinition_ProductDate =
-            myGroup.Definitions.Create("Instance_ProductDate", ParameterType.Text);
+            Definition PhaseGraphics = myGroup.Definitions.Create("PhaseGraphics", ParameterType.Text);
             // create a category set and insert category of wall to it
-            CategorySet myCategories = app.Application.Create.NewCategorySet();
+            CategorySet myCategories = app.Create.NewCategorySet();
             // use BuiltInCategory to get category of wall
-            Category myCategory = app.ActiveUIDocument.Document.Settings.Categories.get_Item(
+            Category myCategory = doc.Settings.Categories.get_Item(
             BuiltInCategory.OST_Walls);
             myCategories.Insert(myCategory);
             //Create an instance of InstanceBinding
             InstanceBinding instanceBinding =
-            app.Application.Create.NewInstanceBinding(myCategories);
+            app.Create.NewInstanceBinding(myCategories);
             // Get the BingdingMap of current document.
-            BindingMap bindingMap = app.ActiveUIDocument.Document.ParameterBindings;
+            BindingMap bindingMap = app.Document.ParameterBindings;
             // Bind the definitions to the document
-            bool instanceBindOK = bindingMap.Insert(myDefinition_ProductDate,
+            bool instanceBindOK = bindingMap.Insert(PhaseGraphics,
             instanceBinding, BuiltInParameterGroup.PG_TEXT);
             return instanceBindOK;
+            
         }
-        private DefinitionFile SetAndOpenExternalSharedParamFile(
-Autodesk.Revit.ApplicationServices.Application application, string sharedParameterFile)
+
+        static public string AssemblyDirectory
         {
-            // set the path of shared parameter file to current Revit
-            application.Options.SharedParametersFilename = sharedParameterFile;
-            // open the file
-            return application.OpenSharedParameterFile();
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
         }
         #endregion
-    }
+    
 
     public class WallUpdater : IUpdater
     {
@@ -80,6 +108,7 @@ Autodesk.Revit.ApplicationServices.Application application, string sharedParamet
         }
         public void Execute(UpdaterData data)
         {
+           
             Document doc = data.GetDocument();
             // Cache the wall type
             if (m_wallType == null)

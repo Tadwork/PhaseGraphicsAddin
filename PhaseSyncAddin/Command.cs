@@ -7,8 +7,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
 #endregion
-//DESCRIPTION
-//Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters
+
 namespace PhaseSyncAddin
 {
     [Transaction(TransactionMode.Automatic)]
