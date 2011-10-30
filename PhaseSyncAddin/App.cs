@@ -19,8 +19,8 @@ namespace PhaseSyncAddin
     {
         public Result OnStartup(UIControlledApplication a)
         {//add new parameter to wall when a document opens
-            a.ControlledApplication.DocumentOpened +=new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(application_DocumentOpened);
-                        
+            a.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(application_DocumentOpened);
+
 
             // Register wall updater with Revit
             WallUpdater updater = new WallUpdater(a.ActiveAddInId);
@@ -28,7 +28,7 @@ namespace PhaseSyncAddin
             // Change Scope = any Wall element
             ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));
             // Change type = element addition
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter,Element.GetChangeTypeElementAddition());
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeElementAddition());
             return Result.Succeeded;
         }
 
@@ -42,9 +42,9 @@ namespace PhaseSyncAddin
         {
             //add new parameter to wall when a document opens
 
-                // get document from event args.
-                Document doc = args.Document;
-               SetNewParameterToInstanceWall(doc, AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
+            // get document from event args.
+            Document doc = args.Document;
+            SetNewParameterToInstanceWall(doc, AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
         }
 
 
@@ -56,7 +56,7 @@ namespace PhaseSyncAddin
             // set the path of shared parameter file to current Revit
             app.SharedParametersFilename = sharedParameterFile;
             // open the file
-            myDefinitionFile =  app.OpenSharedParameterFile();
+            myDefinitionFile = app.OpenSharedParameterFile();
             // create a new group in the shared parameters file
             DefinitionGroups myGroups = myDefinitionFile.Groups;
             DefinitionGroup myGroup = myGroups.Create("Phases");
@@ -77,7 +77,7 @@ namespace PhaseSyncAddin
             bool instanceBindOK = bindingMap.Insert(PhaseGraphics,
             instanceBinding, BuiltInParameterGroup.PG_TEXT);
             return instanceBindOK;
-            
+
         }
 
         static public string AssemblyDirectory
@@ -91,69 +91,69 @@ namespace PhaseSyncAddin
             }
         }
         #endregion
-    
 
-    public class WallUpdater : IUpdater
-    {
-        static AddInId m_appId;
-        static UpdaterId m_updaterId;
-        WallType m_wallType = null;
-        // constructor takes the AddInId for the add-in associated with this updater
-        public WallUpdater(AddInId id)
+
+        public class WallUpdater : IUpdater
         {
-            m_appId = id;
-            m_updaterId = new UpdaterId(m_appId, new Guid("0D1AD583-A9F0-43D5-9680-C99427DC0D25"));
-        }
-        public void Execute(UpdaterData data)
-        {
-           
-            Document doc = data.GetDocument();
-            // Cache the wall type
-            if (m_wallType == null)
+            static AddInId m_appId;
+            static UpdaterId m_updaterId;
+            WallType m_wallType = null;
+            // constructor takes the AddInId for the add-in associated with this updater
+            public WallUpdater(AddInId id)
             {
-                FilteredElementCollector collector = new FilteredElementCollector(doc);
-                collector.OfClass(typeof(WallType));
-                //var wallTypes = from element in collector
-                //                where
-                //                element.Name == "Exterior - Brick on CMU"
-                //                select element;
-                //if (wallTypes.Count<Element>() > 0)
-                //{
-                //    m_wallType = wallTypes.Cast<WallType>().ElementAt<WallType>(0);
-                //}
+                m_appId = id;
+                m_updaterId = new UpdaterId(m_appId, new Guid("0D1AD583-A9F0-43D5-9680-C99427DC0D25"));
             }
-            if (m_wallType != null)
+            public void Execute(UpdaterData data)
             {
-                // Change the wall to the cached wall type.
-                foreach (ElementId addedElemId in data.GetAddedElementIds())
+
+                Document doc = data.GetDocument();
+                // Cache the wall type
+                if (m_wallType == null)
                 {
-                    Wall wall = doc.get_Element(addedElemId) as Wall;
-                    // TODO: add some error  checking code
-                    if (wall != null)
+                    FilteredElementCollector collector = new FilteredElementCollector(doc);
+                    collector.OfClass(typeof(WallType));
+                    //var wallTypes = from element in collector
+                    //                where
+                    //                element.Name == "Exterior - Brick on CMU"
+                    //                select element;
+                    //if (wallTypes.Count<Element>() > 0)
+                    //{
+                    //    m_wallType = wallTypes.Cast<WallType>().ElementAt<WallType>(0);
+                    //}
+                }
+                if (m_wallType != null)
+                {
+                    // Change the wall to the cached wall type.
+                    foreach (ElementId addedElemId in data.GetAddedElementIds())
                     {
-                        var phase = from Parameter p in wall.Parameters where p.Definition.Name == "PhaseGraphics" select p;
-                        phase.First<Parameter>().SetValueString(wall.PhaseCreated.Name);
+                        Wall wall = doc.get_Element(addedElemId) as Wall;
+                        // TODO: add some error  checking code
+                        if (wall != null)
+                        {
+                            var phase = from Parameter p in wall.Parameters where p.Definition.Name == "PhaseGraphics" select p;
+                            phase.First<Parameter>().SetValueString(wall.PhaseCreated.Name);
+                        }
                     }
                 }
-            }
 
-        }
-        public string GetAdditionalInformation()
-        {
-            return "Syncs Phases with PhaseGraphics for all walls changed,";
-        }
-        public ChangePriority GetChangePriority()
-        {
-            return ChangePriority.FloorsRoofsStructuralWalls;
-        }
-        public UpdaterId GetUpdaterId()
-        {
-            return m_updaterId;
-        }
-        public string GetUpdaterName()
-        {
-            return "Wall Phase Graphics Updater";
+            }
+            public string GetAdditionalInformation()
+            {
+                return "Syncs Phases with PhaseGraphics for all walls changed,";
+            }
+            public ChangePriority GetChangePriority()
+            {
+                return ChangePriority.FloorsRoofsStructuralWalls;
+            }
+            public UpdaterId GetUpdaterId()
+            {
+                return m_updaterId;
+            }
+            public string GetUpdaterName()
+            {
+                return "Wall Phase Graphics Updater";
+            }
         }
     }
-
 }
