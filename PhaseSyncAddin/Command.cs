@@ -5,7 +5,7 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using System.Linq;
+
 #endregion
 //DESCRIPTION
 //Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters
