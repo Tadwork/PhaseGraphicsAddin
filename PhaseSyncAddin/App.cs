@@ -28,7 +28,8 @@ namespace PhaseSyncAddin
             // Change Scope = any Wall element
             ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));
             // Change type = element addition
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeElementAddition());
+            
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.PHASE_CREATED )));
             return Result.Succeeded;
         }
 
@@ -39,13 +40,17 @@ namespace PhaseSyncAddin
             return Result.Succeeded;
         }
         public void application_DocumentOpened(object sender, DocumentOpenedEventArgs args)
-        {
-            //add new parameter to wall when a document opens
-
-            // get document from event args.
+        { // get document from event args.
             Document doc = args.Document;
+            //add new parameter to wall when a document opens
+            Transaction transaction = new Transaction(doc, "Add PhaseGraphics");
+            if (transaction.Start() == TransactionStatus.Started)
+            {
+                SetNewParameterToInstanceWall(doc, @"C:\Users\tzvi\AppData\Roaming\Autodesk\Revit\Addins\2012\PhaseSyncSharedParams.txt");  // AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
+                transaction.Commit();
+            }
+           
 
-            SetNewParameterToInstanceWall(doc, @"C:\Users\tzvi\Documents\phasesyncaddin\PhaseSyncAddin\PhaseSyncSharedParams.txt");  // AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
         }
 
 
@@ -60,7 +65,7 @@ namespace PhaseSyncAddin
             myDefinitionFile = app.OpenSharedParameterFile();
             // create a new group in the shared parameters file
             DefinitionGroups myGroups = myDefinitionFile.Groups;
-            DefinitionGroup myGroup = myGroups.Create("Phases");
+            DefinitionGroup myGroup = myGroups.Create("Phase");
             // create an instance definition in definition group MyParameters
             Definition PhaseGraphics = myGroup.Definitions.Create("PhaseGraphics", ParameterType.Text);
             // create a category set and insert category of wall to it
@@ -70,27 +75,25 @@ namespace PhaseSyncAddin
             BuiltInCategory.OST_Walls);
             myCategories.Insert(myCategory);
             //Create an instance of InstanceBinding
-            InstanceBinding instanceBinding =
-            app.Create.NewInstanceBinding(myCategories);
-            // Get the BingdingMap of current document.
+            InstanceBinding instanceBinding = app.Create.NewInstanceBinding(myCategories);
+            // Get the BindingMap of current document.
             BindingMap bindingMap = doc.ParameterBindings;
             // Bind the definitions to the document
-            bool instanceBindOK = bindingMap.Insert(PhaseGraphics,
-            instanceBinding, BuiltInParameterGroup.PG_TEXT);
+            bool instanceBindOK = bindingMap.Insert(PhaseGraphics, instanceBinding, BuiltInParameterGroup.PG_TEXT);
             return instanceBindOK;
 
         }
 
-        static public string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
+        //static public string AssemblyDirectory
+        //{
+        //    get
+        //    {
+        //        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+        //        UriBuilder uri = new UriBuilder(codeBase);
+        //        string path = Uri.UnescapeDataString(uri.Path);
+        //        return Path.GetDirectoryName(path);
+        //    }
+        //}
         #endregion
 
 
@@ -107,7 +110,7 @@ namespace PhaseSyncAddin
             }
             public void Execute(UpdaterData data)
             {
-
+                
                 Document doc = data.GetDocument();
                 foreach (ElementId addedElemId in data.GetAddedElementIds())
                     {
@@ -116,8 +119,10 @@ namespace PhaseSyncAddin
                         if (wall != null)
                         {
                             var phase = from Parameter p in wall.Parameters where p.Definition.Name == "PhaseGraphics" select p;
-                            phase.First<Parameter>().SetValueString(wall.PhaseCreated.Name);
+                            phase.First<Parameter>().Set(wall.PhaseCreated.Name);
+                            TaskDialog.Show("Revit", wall.PhaseCreated.Name + phase.First<Parameter>().AsString() );
                         }
+                        
                     }
                 // Cache the wall type
                 //if (m_wallType == null)
