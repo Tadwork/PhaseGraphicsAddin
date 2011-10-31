@@ -44,7 +44,8 @@ namespace PhaseSyncAddin
 
             // get document from event args.
             Document doc = args.Document;
-            SetNewParameterToInstanceWall(doc, AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
+
+            SetNewParameterToInstanceWall(doc, @"C:\Users\tzvi\Documents\phasesyncaddin\PhaseSyncAddin\PhaseSyncSharedParams.txt");  // AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
         }
 
 
@@ -108,24 +109,7 @@ namespace PhaseSyncAddin
             {
 
                 Document doc = data.GetDocument();
-                // Cache the wall type
-                if (m_wallType == null)
-                {
-                    FilteredElementCollector collector = new FilteredElementCollector(doc);
-                    collector.OfClass(typeof(WallType));
-                    //var wallTypes = from element in collector
-                    //                where
-                    //                element.Name == "Exterior - Brick on CMU"
-                    //                select element;
-                    //if (wallTypes.Count<Element>() > 0)
-                    //{
-                    //    m_wallType = wallTypes.Cast<WallType>().ElementAt<WallType>(0);
-                    //}
-                }
-                if (m_wallType != null)
-                {
-                    // Change the wall to the cached wall type.
-                    foreach (ElementId addedElemId in data.GetAddedElementIds())
+                foreach (ElementId addedElemId in data.GetAddedElementIds())
                     {
                         Wall wall = doc.get_Element(addedElemId) as Wall;
                         // TODO: add some error  checking code
@@ -135,7 +119,25 @@ namespace PhaseSyncAddin
                             phase.First<Parameter>().SetValueString(wall.PhaseCreated.Name);
                         }
                     }
-                }
+                // Cache the wall type
+                //if (m_wallType == null)
+                //{
+                //    FilteredElementCollector collector = new FilteredElementCollector(doc);
+                //    collector.OfClass(typeof(WallType));
+                //    //var wallTypes = from element in collector
+                //    //                where
+                //    //                element.Name == "Exterior - Brick on CMU"
+                //    //                select element;
+                //    //if (wallTypes.Count<Element>() > 0)
+                //    //{
+                //    //    m_wallType = wallTypes.Cast<WallType>().ElementAt<WallType>(0);
+                //    //}
+                //}
+                //if (m_wallType != null)
+                //{
+                //    // Change the wall to the cached wall type.
+                    
+                //}
 
             }
             public string GetAdditionalInformation()
