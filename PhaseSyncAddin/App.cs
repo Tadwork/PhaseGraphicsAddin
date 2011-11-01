@@ -26,10 +26,16 @@ namespace PhaseSyncAddin
             WallUpdater updater = new WallUpdater(a.ActiveAddInId);
             UpdaterRegistry.RegisterUpdater(updater);
             // Change Scope = any Wall element
-            ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));
+            List<Type> types = new List<Type>(2 );
+ 
+              types.Add( typeof(ContFooting ) );
+              types.Add( typeof( Wall ) );
+              ElementMulticlassFilter wallFilter = new ElementMulticlassFilter(types);
+           // ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));
             // Change type = element addition
-            
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.PHASE_CREATED )));
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeElementAddition());
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)));           
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter,Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.PHASE_CREATED )));
             return Result.Succeeded;
         }
 
@@ -63,16 +69,16 @@ namespace PhaseSyncAddin
             app.SharedParametersFilename = sharedParameterFile;
             // open the file
             myDefinitionFile = app.OpenSharedParameterFile();
-            // create a new group in the shared parameters file
-            DefinitionGroups myGroups = myDefinitionFile.Groups;
-            DefinitionGroup myGroup = myGroups.Create("Phase");
-            // create an instance definition in definition group MyParameters
-            Definition PhaseGraphics = myGroup.Definitions.Create("PhaseGraphics", ParameterType.Text);
+            //// create a new group in the shared parameters file
+            //DefinitionGroups myGroups = myDefinitionFile.Groups;
+            //DefinitionGroup myGroup = myGroups.Create("Phase");
+            //// create an instance definition in definition group MyParameters
+            //Definition PhaseGraphics = myGroup.Definitions.Create("PhaseGraphics", ParameterType.Text,true);
             // create a category set and insert category of wall to it
+            Definition PhaseGraphics = myDefinitionFile.Groups.get_Item("Phase").Definitions.get_Item("PhaseGraphics");
             CategorySet myCategories = app.Create.NewCategorySet();
-            // use BuiltInCategory to get category of wall
-            Category myCategory = doc.Settings.Categories.get_Item(
-            BuiltInCategory.OST_Walls);
+             //use BuiltInCategory to get category of wall
+            Category myCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Walls);
             myCategories.Insert(myCategory);
             //Create an instance of InstanceBinding
             InstanceBinding instanceBinding = app.Create.NewInstanceBinding(myCategories);
@@ -110,39 +116,35 @@ namespace PhaseSyncAddin
             }
             public void Execute(UpdaterData data)
             {
-                
                 Document doc = data.GetDocument();
-                foreach (ElementId addedElemId in data.GetAddedElementIds())
+                foreach (ElementId ElemId in data.GetModifiedElementIds())
                     {
-                        Wall wall = doc.get_Element(addedElemId) as Wall;
+                        Wall wall = doc.get_Element(ElemId) as Wall;
                         // TODO: add some error  checking code
                         if (wall != null)
                         {
+
+                           
                             var phase = from Parameter p in wall.Parameters where p.Definition.Name == "PhaseGraphics" select p;
                             phase.First<Parameter>().Set(wall.PhaseCreated.Name);
-                            TaskDialog.Show("Revit", wall.PhaseCreated.Name + phase.First<Parameter>().AsString() );
+                            
                         }
-                        
+                   
                     }
-                // Cache the wall type
-                //if (m_wallType == null)
-                //{
-                //    FilteredElementCollector collector = new FilteredElementCollector(doc);
-                //    collector.OfClass(typeof(WallType));
-                //    //var wallTypes = from element in collector
-                //    //                where
-                //    //                element.Name == "Exterior - Brick on CMU"
-                //    //                select element;
-                //    //if (wallTypes.Count<Element>() > 0)
-                //    //{
-                //    //    m_wallType = wallTypes.Cast<WallType>().ElementAt<WallType>(0);
-                //    //}
-                //}
-                //if (m_wallType != null)
-                //{
-                //    // Change the wall to the cached wall type.
-                    
-                //}
+                foreach (ElementId ElemId in data.GetAddedElementIds())
+                {
+                    Wall wall = doc.get_Element(ElemId) as Wall;
+                    // TODO: add some error  checking code
+                    if (wall != null)
+                    {
+
+
+                        var phase = from Parameter p in wall.Parameters where p.Definition.Name == "PhaseGraphics" select p;
+                        phase.First<Parameter>().Set(wall.PhaseCreated.Name);
+
+                    }
+
+                }
 
             }
             public string GetAdditionalInformation()
