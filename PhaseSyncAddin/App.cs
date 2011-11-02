@@ -15,22 +15,22 @@ using Autodesk.Revit.DB.Events;
 //Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters
 namespace PhaseSyncAddin
 {
+    
     class App : IExternalApplication
     {
+        private const string PhaseGraphicsGUID = "e0e0252a-0adb-4066-bdf0-d756494b9c72";
         public Result OnStartup(UIControlledApplication a)
-        {//add new parameter to wall when a document opens
+        {
+            //add new event to fire when a document opens
             a.ControlledApplication.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(application_DocumentOpened);
 
 
             // Register updater with Revit
-            WallUpdater updater = new WallUpdater(a.ActiveAddInId);
+            PhaseGraphicsUpdater updater = new PhaseGraphicsUpdater(a.ActiveAddInId);
             UpdaterRegistry.RegisterUpdater(updater);
 
             ElementMulticlassFilter Filter = PhaseGraphicsTypeFilter();
-           // ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));
-            // Change type = element addition
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter, Element.GetChangeTypeElementAddition());
-           // UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), wallFilter, Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)));           
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter, Element.GetChangeTypeElementAddition());        
             UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter,Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.PHASE_CREATED )));
             return Result.Succeeded;
         }
@@ -49,87 +49,49 @@ namespace PhaseSyncAddin
 
         public Result OnShutdown(UIControlledApplication a)
         {
-            WallUpdater updater = new WallUpdater(a.ActiveAddInId);
+            PhaseGraphicsUpdater updater = new PhaseGraphicsUpdater(a.ActiveAddInId);
             UpdaterRegistry.UnregisterUpdater(updater.GetUpdaterId());
             return Result.Succeeded;
         }
         public void application_DocumentOpened(object sender, DocumentOpenedEventArgs args)
-        { // get document from event args.
+        { 
             Document doc = args.Document;
-            //add new parameter to wall when a document opens
+            //add new parameter when a document opens
             Transaction transaction = new Transaction(doc, "Add PhaseGraphics");
             if (transaction.Start() == TransactionStatus.Started)
             {
-                
-                SetNewParameterToInstanceWall(doc, @"C:\Users\tzvi\AppData\Roaming\Autodesk\Revit\Addins\2012\PhaseSyncSharedParams.txt"); //AssemblyDirectory + @"\PhaseSyncSharedParams.txt");
+                var fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Autodesk\Revit\Addins\2012\PhaseSyncSharedParams.txt");
+                SetNewParameterToInstances(doc, fileName.ToString()); 
                 transaction.Commit();
             }
-
-            transaction = new Transaction(doc, "Sync PhaseGraphics");
-            if (transaction.Start() == TransactionStatus.Started)
+            //sync phasegraphics param with Phases of all empty PhaseGraphics objects
+            Transaction transaction2 = new Transaction(doc, "Sync PhaseGraphics");
+            ICollection<Element> types = null;
+            if (transaction2.Start() == TransactionStatus.Started)
             {
 
-                // Create a Filter to get all the doors in the document
-                //ElementClassFilter familyInstanceFilter = new ElementClassFilter(typeof(FamilyInstance));
-                // Creates an ElementParameter filter to find rooms whose area is 
-                // greater than specified value
-                // Create filter by provider and evaluator 
-                // provider
-                ElementMulticlassFilter typeFilters = PhaseGraphicsTypeFilter();
+                  // Apply the filter to the elements in the active document
                 FilteredElementCollector collector = new FilteredElementCollector(doc);
-                ICollection<ElementId> types = collector.WherePasses(typeFilters).ToElementIds();
-//                Element e = doc.get_Element(types.First<ElementId>());
-//                TaskDialog.Show("REvit", types.Count().ToString());
-//                Parameter phasegraphicsParam = e.get_Parameter(new Guid("e0e0252a-0adb-4066-bdf0-d756494b9c72"));
-//                ParameterValueProvider pvp = new ParameterValueProvider(phasegraphicsParam.Id);
-
-//#region not empty
-//                        // evaluator
-//                FilterStringRuleEvaluator ruleEval = new  FilterStringEquals();
-//                // rule value    
-//                //string ruleValue = ""; // filter room whose value is empty
-//                // rule
-//                FilterRule fRule = new FilterStringRule(pvp,ruleEval,string.Empty,false);
-
-//                // Create an ElementParameter filter
-//                ElementParameterFilter paramFilternotempty = new ElementParameterFilter(fRule,true); 
-//    #endregion
-
-//                ICollection<ElementId> notEmptyPhaseGraphics = collector.WherePasses(paramFilternotempty).ToElementIds();
-//                Parameter p = doc.get_Element(notEmptyPhaseGraphics.First<ElementId>()).get_Parameter(new Guid("e0e0252a-0adb-4066-bdf0-d756494b9c72"));
-//                TaskDialog.Show("REvit", notEmptyPhaseGraphics.Count().ToString() + p.HasValue + "'" + p.AsString() + "'");
-//                //// Apply the filter to the elements in the active document
-//                //FilteredElementCollector collector = new FilteredElementCollector(doc);
-//                //IList<Element> rooms = collector.WherePasses(filter).ToElements();
-
-
-//                //// Find rooms whose area is less than or equal to 100: 
-//                //// Use inverted filter to match elements
-//                //ElementParameterFilter lessOrEqualFilter = new ElementParameterFilter(fRule, true);
-//                //collector = new FilteredElementCollector(document);
-//                //IList<Element> lessOrEqualFounds = collector.WherePasses(lessOrEqualFilter).ToElements();
-//                ExclusionFilter ExcludenotEmpty = new ExclusionFilter(notEmptyPhaseGraphics);
-//                LogicalAndFilter filter = new LogicalAndFilter(typeFilters, ExcludenotEmpty);
-//                ICollection<ElementId> EmptyPhaseGraphics = collector.WherePasses(filter).ToElementIds();
-//                TaskDialog.Show("REvit", EmptyPhaseGraphics.Count().ToString());
-                foreach (ElementId ElemId in types)
+                types = collector.WherePasses(PhaseGraphicsTypeFilter()).ToElements();
+                foreach (Element elem in types)
                     
                 { 
-                    Element elem = doc.get_Element(ElemId);
-                    if (elem.get_Parameter(new Guid("e0e0252a-0adb-4066-bdf0-d756494b9c72")).HasValue == false)
+                    //get the phasegraphics parameter from its guid 
+                    if (elem.get_Parameter(new Guid(PhaseGraphicsGUID)).HasValue == false)
                     {
                         SyncPhaseGraphics(doc, elem);
                     }
 
                 }
-                transaction.Commit();
+                transaction2.Commit();
             }
+ 
            
         }
 
 
         #region Shared Parameter
-        public bool SetNewParameterToInstanceWall(Document doc, string sharedParameterFile)
+        public bool SetNewParameterToInstances(Document doc, string sharedParameterFile)
         {
             Application app = doc.Application;
             DefinitionFile myDefinitionFile;
@@ -137,17 +99,16 @@ namespace PhaseSyncAddin
             app.SharedParametersFilename = sharedParameterFile;
             // open the file
             myDefinitionFile = app.OpenSharedParameterFile();
-            // create a category set and insert category of wall to it
+            // get the phasegraphics param
             Definition PhaseGraphics = myDefinitionFile.Groups.get_Item("Phase").Definitions.get_Item("PhaseGraphics");
             CategorySet myCategories = app.Create.NewCategorySet();
-             //use BuiltInCategory to get category of wall
+             //use BuiltInCategory to add categories for phasegraphics
             AddCategories(doc, myCategories,BuiltInCategory.OST_Walls);
             AddCategories(doc, myCategories, BuiltInCategory.OST_Roofs);
             AddCategories(doc, myCategories, BuiltInCategory.OST_Floors);
             AddCategories(doc, myCategories, BuiltInCategory.OST_StructuralFoundation);
             //Create an instance of InstanceBinding
             InstanceBinding instanceBinding = app.Create.NewInstanceBinding(myCategories);
-            // Get the BindingMap of current document.
             BindingMap bindingMap = doc.ParameterBindings;
             // Bind the definitions to the document
             bool instanceBindOK = bindingMap.Insert(PhaseGraphics, instanceBinding, BuiltInParameterGroup.PG_TEXT);
@@ -161,43 +122,36 @@ namespace PhaseSyncAddin
             myCategories.Insert(myCategory);
         }
 
-        static public string AssemblyDirectory
-        {
-            get
-            {
-                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
         #endregion
 
 
-        public class WallUpdater : IUpdater
+        public class PhaseGraphicsUpdater : IUpdater
         {
             static AddInId m_appId;
             static UpdaterId m_updaterId;
             WallType m_wallType = null;
             // constructor takes the AddInId for the add-in associated with this updater
-            public WallUpdater(AddInId id)
+            public PhaseGraphicsUpdater(AddInId id)
             {
                 m_appId = id;
-                m_updaterId = new UpdaterId(m_appId, new Guid("0D1AD583-A9F0-43D5-9680-C99427DC0D25"));
+                m_updaterId = new UpdaterId(m_appId, new Guid(PhaseGraphicsGUID));
             }
+
             public void Execute(UpdaterData data)
             {
                 Document doc = data.GetDocument();
-                foreach (ElementId ElemId in data.GetModifiedElementIds())
+                    //sync the modified elements
+                    foreach (ElementId ElemId in data.GetModifiedElementIds())
                     {
                         SyncPhaseGraphics(doc, ElemId);
                    
                     }
-                foreach (ElementId ElemId in data.GetAddedElementIds())
-                {
-                    SyncPhaseGraphics(doc, ElemId);
+                    //sync the added elements
+                    foreach (ElementId ElemId in data.GetAddedElementIds())
+                    {
+                        SyncPhaseGraphics(doc, ElemId);
 
-                }
+                    }
 
             }
 
@@ -218,30 +172,25 @@ namespace PhaseSyncAddin
             {
                 return "Phase Graphics Updater";
             }
-        }
+        } // end updater
+        //sync the PhaseGraphics with one overload taking an already expanded elemnt to save time
         private static void SyncPhaseGraphics(Document doc, ElementId ElemId)
         {
             Element e = doc.get_Element(ElemId);
-            // TODO: add some error  checking code
-            if (e != null)
-            {
-
-
-                var phase = from Parameter p in e.Parameters where p.Definition.Name == "PhaseGraphics" select p;
-                phase.First<Parameter>().Set(e.PhaseCreated.Name);
-
-            }
+            SyncPhaseGraphics(doc, e);
         }
-        private static void SyncPhaseGraphics(Document doc, Element Elem)
+        private static void SyncPhaseGraphics(Document doc, Element elem)
         {
-            Element e = Elem;
             // TODO: add some error  checking code
-            if (e != null)
+
+            if (elem != null)
             {
 
-
-                var phase = from Parameter p in e.Parameters where p.Definition.Name == "PhaseGraphics" select p;
-                phase.First<Parameter>().Set(e.PhaseCreated.Name);
+                var phase = from Parameter p in elem.Parameters where p.Definition.Name == "PhaseGraphics" select p;
+                if ((phase.Count() > 0) && (phase.First<Parameter>().AsString() != elem.PhaseCreated.Name))
+                {
+                    phase.First<Parameter>().Set(elem.PhaseCreated.Name);
+                }
 
             }
         }
