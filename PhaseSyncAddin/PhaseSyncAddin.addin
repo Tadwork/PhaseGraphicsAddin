@@ -1,14 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
-  <!--<AddIn Type="Command">
-    <Text>Command PhaseSyncAddin</Text>
-    <Description>Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters</Description>
-    <Assembly>PhaseSyncAddin.dll</Assembly>
-    <FullClassName>PhaseSyncAddin.Command</FullClassName>
-    <ClientId>E4F819ED-2ED4-4CDC-AA35-26BA1441C1C2</ClientId>
-    <VendorId>TDWK</VendorId>
-    <VendorDescription>Tadwork</VendorDescription>
-  </AddIn>-->
   <AddIn Type="Application">
     <Name>Application PhaseSyncAddin</Name>
     <Assembly>PhaseSyncAddin.dll</Assembly>
