@@ -52,6 +52,7 @@ namespace PhaseSyncAddin
 
             ElementMulticlassFilter Filter = PhaseGraphicsTypeFilter();
             UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter, Element.GetChangeTypeAny());
+            
              return Result.Succeeded;
         }
 
@@ -105,7 +106,7 @@ namespace PhaseSyncAddin
                 }
                 transaction2.Commit();
             }
- 
+
            
         }
 
@@ -149,7 +150,6 @@ namespace PhaseSyncAddin
         {
             static AddInId m_appId;
             static UpdaterId m_updaterId;
-            WallType m_wallType = null;
             // constructor takes the AddInId for the add-in associated with this updater
             public PhaseGraphicsUpdater(AddInId id)
             {
