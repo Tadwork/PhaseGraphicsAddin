@@ -11,6 +11,27 @@ using System.Reflection;
 using System.IO;
 using Autodesk.Revit.DB.Events;
 #endregion
+
+/* Copyright © 2011, Tzvi A. Friedman
+ * All rights reserved.
+ * 
+ * License
+ * This file is part of "Revit PhaseGraphics Addin".
+
+    The "Revit PhaseGraphics Addin" is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    The "Revit PhaseGraphics Addin" is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with the "Revit PhaseGraphics Addin".  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 //DESCRIPTION
 //Works in the background to add a PhaseGraphics Parameter to Walls and other elements so they can be changed with Filters
 namespace PhaseSyncAddin
@@ -30,9 +51,8 @@ namespace PhaseSyncAddin
             UpdaterRegistry.RegisterUpdater(updater);
 
             ElementMulticlassFilter Filter = PhaseGraphicsTypeFilter();
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter, Element.GetChangeTypeElementAddition());        
-            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter,Element.GetChangeTypeParameter(new ElementId(BuiltInParameter.PHASE_CREATED )));
-            return Result.Succeeded;
+            UpdaterRegistry.AddTrigger(updater.GetUpdaterId(), Filter, Element.GetChangeTypeAny());
+             return Result.Succeeded;
         }
 
         private static ElementMulticlassFilter PhaseGraphicsTypeFilter()
@@ -139,6 +159,7 @@ namespace PhaseSyncAddin
 
             public void Execute(UpdaterData data)
             {
+                
                 Document doc = data.GetDocument();
                     //sync the modified elements
                     foreach (ElementId ElemId in data.GetModifiedElementIds())
@@ -150,7 +171,6 @@ namespace PhaseSyncAddin
                     foreach (ElementId ElemId in data.GetAddedElementIds())
                     {
                         SyncPhaseGraphics(doc, ElemId);
-
                     }
 
             }
@@ -181,7 +201,7 @@ namespace PhaseSyncAddin
         }
         private static void SyncPhaseGraphics(Document doc, Element elem)
         {
-            // TODO: add some error  checking code
+            
 
             if (elem != null)
             {
