@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Phasegraphicsaddin by Tadwork</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Phasegraphicsaddin</h1>
+        <p>An Autodesk Revit Addin to allow FIltering and scheduling by Phase Created</p>
+        <p class="view"><a href="https://github.com/Tadwork/PhaseGraphicsAddin">View the Project on GitHub <small>Tadwork/PhaseGraphicsAddin</small></a></p>
+        <ul>
+          <li><a href="https://github.com/Tadwork/PhaseGraphicsAddin/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/Tadwork/PhaseGraphicsAddin/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/Tadwork/PhaseGraphicsAddin">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h3>The Why.</h3>
+
+<p>Autodesk Revit is a 3D BIM (Building Information Modeling) tool which allows Architects, Engineers, and Building Owners, to collaborate on the design of a building and coordinate their efforts. Unfortunately Revit contains some limitations that limit what parameters can be used to filter, sort and schedule. The Created Phase parameter, which allows objects in the Building Model to be tagged as to what Phase (i.e. Existing, Proposed, etc.) they were created. This parameter is one of the parameters that cannot be accessed in order to schedule by it or to filter or sort by it. This addin just copies the value of the phase each wall, floor, roof, or footing object was created in, and copies it to a PhaseGraphics parameter so that it can be scheduled. The addin then makes sure that future revisions to the Phase Created parameter of objects in the model are synchronized with the PhaseGraphics parameter.</p>
+
+<h3>The How</h3>
+
+<p>This addin uses some new features of Revit 2012 that allow addins to hook into the model updater and see when objects are being changed and make corresponding changes to keep the Phase and PhaseGraphics synchronized.</p>
+
+<h3>Wheres Revit 2013 support?</h3>
+
+<p>coming up soon!!!</p>
+
+<h3>Authors and Contributors</h3>
+
+<p>Right now it's just me <a href="https://github.com/tadwork" class="user-mention">@tadwork</a>, but If you have ideas on how to improve this, feel free to add it as an issue on Github.</p>
+
+<h3>Support or Contact</h3>
+
+<p>Having trouble with the addin? post a bug in the issues and ill hop on it when I have a chance</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/Tadwork">Tadwork</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
