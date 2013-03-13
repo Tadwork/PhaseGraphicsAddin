@@ -108,8 +108,8 @@
     <Delete Files="$(AppData)\Autodesk\REVIT\Addins\2012\PhaseSyncAddin.dll" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)PhaseSyncAddin.addin" "$(AppData)\Autodesk\REVIT\Addins\2012"
-copy "$(ProjectDir)\bin\debug\PhaseSyncAddin.dll" "$(AppData)\Autodesk\REVIT\Addins\2012"
-copy "$(ProjectDir)PhaseSyncSharedParams.txt" "$(AppData)\Autodesk\REVIT\Addins\2012"</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)PhaseSyncAddin.addin" "$(AppData)\Autodesk\REVIT\Addins\2013"
+copy "$(ProjectDir)\bin\debug\PhaseSyncAddin.dll" "$(AppData)\Autodesk\REVIT\Addins\2013"
+copy "$(ProjectDir)PhaseSyncSharedParams.txt" "$(AppData)\Autodesk\REVIT\Addins\2013"</PostBuildEvent>
   </PropertyGroup>
 </Project>
