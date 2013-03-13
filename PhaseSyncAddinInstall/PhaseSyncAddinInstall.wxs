@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="83125C4C-75A5-4ED9-B20C-E3D90DAF7EB5"
+             Name="PhaseSyncAddinInstall"
+             Language="1033"
+             Version="1.0.0"
+             Manufacturer="MetroBIM"
+             UpgradeCode="2FCB5DE9-BFB4-420B-83F9-C1096674850C">
+
+        <Package Compressed="yes"/>
+
+        <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+
+        <Directory Name="SourceDir" Id="TARGETDIR">
+            <Directory Name="ProgramFilesFolder" Id="ProgramFilesFolder">
+                <Directory Name="MetroBIM" Id="_1">
+                    <Directory Name="PhaseSyncAddinInstall" Id="_2">
+                        <Component Id="_1" Guid="3C67513D-01DD-4637-8A68-80971EB9504F">
+                            <File Source="..\lgpl.rtf"/>
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+        <Directory Name="Autodesk Addins" Id="_3">
+            <Directory Name="[CommonAppDataFolder]" Id="_4">
+                <Directory Name="Autodesk" Id="_5">
+                    <Directory Name="Revit" Id="_6">
+                        <Directory Name="Addins" Id="_7">
+                            <Directory Name="2012" Id="_8">
+                                <Component Id="_2" Guid="994432C3-9487-495D-8656-3E829A8DBDDE">
+                                    <File Source="UIFrameworkServices.dll"/>
+                                    <File Source="UIFrameworkServices.dll"/>
+                                </Component>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature Id="_1" Level="1">
+            <ComponentRef Id="_1"/>
+            <ComponentRef Id="_2"/>
+        </Feature>
+
+    </Product>
+</Wix>
